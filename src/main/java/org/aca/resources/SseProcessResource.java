@@ -18,6 +18,7 @@ import javax.ws.rs.sse.Sse;
 import javax.ws.rs.sse.SseEventSink;
 
 import org.aca.scheduler.CounterBean;
+import org.aca.resources.response.Progress;;
 
 @Path("/process")
 @ApplicationScoped
@@ -39,9 +40,9 @@ public class SseProcessResource {
         if (!started) {
             CompletableFuture.runAsync(() -> process());
             started = true;
-            return Response.ok(String.format("{\"status\":\"started\", \"progress\":%d}", 0)).build();
+            return Response.ok(new Progress("started", 0)).build();
         }
-        return Response.ok(String.format("{\"status\":\"in progress\", \"progress\":%d}", counter.get())).build();
+        return Response.ok(new Progress("in progress", counter.get())).build();
     }
 
     @GET
@@ -56,18 +57,16 @@ public class SseProcessResource {
         while (counter.get() < 100) {
             this.counter.increment();
             this.sleep();
-            if (this.counter.get() < 100) {
+            if (this.counter.get() <= 100) {
                 // The event name has to be message by default so the onmessage works on the
                 // client
                 // otherwise the client needs to use the addEventListener function to subscribe
                 // to different events
-                this.sendProgressEvent("message",
-                        String.format("{\"status\":\"in progress\", \"progress\":%d}", counter.get()));
+                this.sendProgressEvent("message", new Progress("in progress", counter.get()));
+                if (this.counter.get() == 100) {
+                    this.started = false;
+                }
             }
-        }
-        if (this.counter.get() == 100) {
-            sendProgressEvent("message", String.format("{\"status\":\"done\", \"progress\":%d}", counter.get()));
-            this.started = false;
         }
     }
 
