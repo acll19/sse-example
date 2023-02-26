@@ -38,14 +38,16 @@ public class SseProcessResource {
     @Path("/start")
     @Produces(MediaType.APPLICATION_JSON)
     public Response start() {
-        // Do not wait for process to end
-        Uni.createFrom()
-                .nullItem()
-                .emitOn(Infrastructure.getDefaultWorkerPool())
-                .subscribe()
-                .with(item -> process(), Throwable::printStackTrace);
-
-        return Response.ok(String.format("{\"status\":\"started\", \"progress\":%d}", 0)).build();
+        if (counter.get() == 0) {
+            // Do not wait for process to end
+            Uni.createFrom()
+                    .nullItem()
+                    .emitOn(Infrastructure.getDefaultWorkerPool())
+                    .subscribe()
+                    .with(item -> process(), Throwable::printStackTrace);
+            return Response.ok(String.format("{\"status\":\"started\", \"progress\":%d}", 0)).build();
+        }
+        return Response.ok(String.format("{\"status\":\"in progress\", \"progress\":%d}", counter.get())).build();
     }
 
     @GET
