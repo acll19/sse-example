@@ -16,7 +16,6 @@
     const eventSource = new EventSource('http://localhost:8080/process/status', { 
         withCredentials:true
     });
-    
     console.log("Connected", eventSource);
 
     eventSource.onopen = (event) => {
@@ -24,8 +23,11 @@
     }
 
     eventSource.onerror = (error) => {
-        console.log('=============> Error', error);
-        eventSource.close();
+        if (error.readyState == EventSource.CLOSED) {
+            console.log('=============> Error (readyState)', error);
+        }
+        console.log('=============> Error', error); 
+       
     }
 
     eventSource.onmessage = (event) => {
