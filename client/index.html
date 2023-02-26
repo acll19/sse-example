@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head></head>
+</head>
+<body>
+    <div id="display"></div>
+</body>
+<script>
+    fetch('http://localhost:8080/process/start').then(() => {
+        console.log('Process initiated....');
+    }).catch((e) => {
+        console.log(`Unable to start process: ${e.message}`);
+    });
+
+    console.log("Connecting......");
+    const eventSource = new EventSource('http://localhost:8080/process/status', { 
+        withCredentials:true
+    });
+    
+    console.log("Connected", eventSource);
+
+    eventSource.onopen = (event) => {
+        console.log('============> Opened', event);
+    }
+
+    eventSource.onerror = (error) => {
+        console.log('=============> Error', error);
+        eventSource.close();
+    }
+
+    eventSource.onmessage = (event) => {
+        console.log("New message", event.data);
+        document.getElementById("display").innerText = `${event.data}`
+        const progressData = JSON.parse(event.data);
+        if(progressData.progress === 100) {
+            eventSource.close();
+        }
+    };
+</script>
+</html>
