@@ -7,3 +7,7 @@ Simple SSE Broadcaster with Quarkus that simulates a background process. To noti
 ```bash
 mvn quarkus:dev
 ```
+
+## Client
+
+You can find a simple client in [./client/](./client/)
